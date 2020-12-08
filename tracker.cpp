@@ -82,15 +82,15 @@ string run_get(vector<string> tkn)
 		vector<trackerdata> v = mp[hash];
 		int n = v.size();
 		for (int i = 0; i < n - 1; i++)
-			as += v[i].csocket + "->" + v[i].cfpath + "#";
-		as += v[n - 1].csocket + "->" + v[n - 1].cfpath;
+			as += v[i].csocket + "#" + v[i].cfpath + "@";
+		as += v[n - 1].csocket + "#" + v[n - 1].cfpath;
 	}
 	else
 		ans = "maa chuda";
 	return ans;
 }
 
-string run_remove(vector<trackerdata> tkn, char* fpath)
+string run_remove(vector<string> tkn, char* fpath)
 {
 	string hash = tkn[1];
 	string skt = tkn[2];
@@ -120,5 +120,67 @@ string run_remove(vector<trackerdata> tkn, char* fpath)
 	else
 		return "maa chudao";
 
+}
+
+string run_share(vector<string> tkn, char* fpath)
+{
+	string tkn_list = tkn[1] + " " + tkn[2] + " " + tkn[3];
+	trackerdata td(tkn[1], tkn[2], tkn[3]);
+	string as;
+	if (!trackertable.count(td.shash))
+	{
+		trackertable[td.shash].push_back(td);
+		int nul = write_seederlist(fpath, tkn_list);
+		as = "maze maro";
+	}
+	else
+	{
+		vector<trackerdata> v = trackertable[td.shash];
+		bool ch = false;
+		for (int i = 0; i < v.size(); i++)
+		{	if (v[i].csocket == td.csocket)
+			{
+				ch = true;
+				as = "kahe chutiya bana re";
+				break;
+			}
+		}
+		if (!ch)
+		{	as = "mil gai";
+			trackertable[td.shash].push_back(td);
+			int nul = write_seederlist(fpath, tkn_list);
+		}
+	}
+	return as;
+}
+
+string run_close(vector<string> tkn, char *fpath)
+{
+	string client_skt = tkn[1];
+	for (auto it : trackertable)
+	{
+		vector<trackerdata> v = it.second;
+		bool sz_1 = false, skt_mila = false;
+		auto i2;
+		for ( i2 = v.begin(); i2 != v.end(); i2++)
+		{
+			if ((*i2).csocket == client_skt)
+			{
+				skt_mila = true;
+				if (v.size() == 1)
+					sz_1 = true;
+				break;
+			}
+		}
+		if (!skt_mila)
+			continue;
+		trackertable.erase(it);
+		if (!sz_1)
+		{	v.erase(i2);
+			trackertable[it] = v;
+		}
+	}
+	update_seederlist(fpath);
+	return "bhag bsdk";
 }
 
