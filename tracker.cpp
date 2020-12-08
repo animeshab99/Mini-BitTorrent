@@ -219,6 +219,30 @@ int main(int argc, char *argv[])
 			adr.sin_addr.s_addr = inet_addr(trackerskt1.ip);
 			adr.sin_port = htons(trackerskt1.port);
 
+			if (bind(server_fp, (struct sockaddr_in *) &adr, adrlen) < 0)
+			{
+				cout << "error bolte";
+				exit();
+			}
+
+			if (listen(server_fp, 10) < 0)
+			{
+				cout << "erroe bolte";
+				exit();
+			}
+			while (1)
+			{
+				if (new_socket = accept(server_fp, (struct sockaddr_in *) &adr, adrlen) < 0)
+				{	cout << "error bolte";
+					exit();
+				}
+				cout << "server open";
+				if (pthread_create(&mythread, NULL, server_service, (void *)&new_socket) < 0)
+				{	cout << "error bolte";
+					exit();
+				}
+			}
+
 		}
 		return 0;
 	}
