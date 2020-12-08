@@ -1,5 +1,10 @@
 #include<bits/stdc++.h>
+#include "socket.cpp"
+#include <pthread.h>
+
 using namespace std;
+
+string seederfp;
 
 class trackerdata
 {
@@ -184,3 +189,36 @@ string run_close(vector<string> tkn, char *fpath)
 	return "bhag bsdk";
 }
 
+int main(int argc, char *argv[])
+{	mysocket trackerskt1;
+	{	mysocket trackerskt2;
+		pthread_t mythread;
+		if (argc != c)
+		{
+			cout << "kyu chutiya bana ra h";
+			return 0;
+		}
+		else
+		{
+			read_seederlist(argv[3]);
+			trackerskt1.setdata(string(argv[1]));
+			trackerskt2.setdata(string(argv[2]));
+			seederfp = string(argv[3]);
+			int server_fp, new_socket, opt = 1;
+			struct sockaddr_in adr;
+			int adrlen = sizeof(adr);
+			if (server_fp = socket(AF_INET, SOCK_STREAM, 0) == 0)
+			{	cout << "error bolte";
+				exit();
+			}
+			if (setsockopt(server_fp, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt)))
+			{	cout << "error bolte";
+				exit();
+			}
+			adr.sin_family = AF_INET;
+			adr.sin_addr.s_addr = inet_addr(trackerskt1.ip);
+			adr.sin_port = htons(trackerskt1.port);
+
+		}
+		return 0;
+	}
