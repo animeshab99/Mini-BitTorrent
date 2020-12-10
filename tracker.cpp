@@ -91,8 +91,8 @@ string run_get(vector<string> tkn)
 		as += v[n - 1].csocket + "#" + v[n - 1].cfpath;
 	}
 	else
-		ans = "maa chuda";
-	return ans;
+		as = "maa chuda";
+	return as;
 }
 
 string run_remove(vector<string> tkn, char* fpath)
@@ -189,6 +189,53 @@ string run_close(vector<string> tkn, char *fpath)
 	return "bhag bsdk";
 }
 
+void * server_service(void *(socket_ptr))
+{
+	int socket = *(int *)socket_ptr;
+	bool band_kar = false;
+	while (1)
+	{
+		char buffer[1024];
+		int data = read(socket, buffer, 1024);
+		if (!data)
+		{
+			close(socket);
+			return socket_ptr;
+		}
+		string s = string(buffer);
+		string output = "";
+		vector<string> tkn = split_str(s, '#');
+		if (tkn[0] == "share")
+		{
+			output = run_share(tkn, seederfp);
+		}
+		else if (tkn[0] == "remove")
+		{
+			output = run_remove(tkn, seederfp);
+		}
+		else if (tkn[0] == "close")
+		{
+			output = run_close(tkn, seederfp);
+			band_kar = true;
+		}
+		else if (tkn[0] == "get")
+		{
+			output = run_get(tkn, seederfp);
+		}
+		else
+		{
+			output = "bhag bsdk";
+		}
+		output += '\0';
+		send(socket, output, output.size(), 0);
+		if (band_kar)
+		{
+			close(socket);
+			break;
+		}
+	}
+	return socket_ptr;
+}
 int main(int argc, char *argv[])
 {	mysocket trackerskt1;
 	{	mysocket trackerskt2;
