@@ -1,6 +1,10 @@
 #include<bits/stdc++.h>
 using namespace std;
 #define c_size 512*1024
+string sha1()
+{
+    
+}
 string file_hash(char *fpath)
 {
     string f_hash = "";
