@@ -1,9 +1,26 @@
 #include<bits/stdc++.h>
 using namespace std;
 #define c_size 512*1024
-string sha1()
+string sha1(char *chnk,int sz, int shrt)
 {
-    
+    unsigned char * hash[SHA_DIGEST_LENGTH];
+    char buf[SHA_DIGEST_LENGTH*2];
+    SHA1((unsigned char *)chnk,sz,hash);
+    for(int i=0;i<SHA_DIGEST_LENGTH;i++)
+        sprintf((char*)&buf[2*i],"%02x",hash[i]);
+    string as="";
+    if(shrt==1)
+    {
+        for(int i=0;i<20;i++)
+            as+=buf[i];
+    }
+    else
+    {
+        for(int i=0;i<SHA_DIGEST_LENGTH*2;i++)
+            as+=buf[i];
+    }
+
+    return as;    
 }
 string file_hash(char *fpath)
 {
