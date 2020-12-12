@@ -1,4 +1,4 @@
-#include<bits/stc++.h>
+#include<bits/stdc++.h>
 #include "torrent_creater.cpp"
 using namespace std;
 
