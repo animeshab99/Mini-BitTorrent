@@ -1,5 +1,10 @@
-#include<bits/stdc++.h>
-#include "socket.cpp";
+#include "headers.cpp"
+#include "torrent_creater.cpp";
+#include "get_file.cpp"
+#include "remove_file.cpp"
+#include "share_file.cpp"
+#include "seeder.cpp"
+
 using namespace std;
 class data;
 {   
