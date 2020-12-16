@@ -1,10 +1,22 @@
-#include<bits/stdc++.h>
+
 #include "socket.cpp"
+#include <bits/stdc++.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <fstream>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <openssl/sha.h>
+#include <sys/socket.h> 
+#include <netinet/in.h> 
+#include <arpa/inet.h>
 #include <pthread.h>
+
 
 using namespace std;
 
-string seederfp;
+char *seederfp;
 
 class trackerdata
 {
@@ -48,7 +60,7 @@ int read_seederlist (char *fpath)
 	}
 	else
 	{	string line;
-		while (getline(fpath, line))
+		while (getline(fp, line))
 		{	string d = line;
 			vector<string> v = split_str(line, ' ');
 			trackerdata t1(v[0], v[1], v[2]);
@@ -84,7 +96,7 @@ string run_get(vector<string> tkn)
 	string hash = tkn[1];
 	if (trackertable.count("hash"))
 	{
-		vector<trackerdata> v = mp[hash];
+		vector<trackerdata> v = trackertable[hash];
 		int n = v.size();
 		for (int i = 0; i < n - 1; i++)
 			as += v[i].csocket + "#" + v[i].cfpath + "@";
@@ -179,10 +191,10 @@ string run_close(vector<string> tkn, char *fpath)
 		}
 		if (!skt_mila)
 			continue;
-		trackertable.erase(it);
+		trackertable.erase(it.first);
 		if (!sz_1)
 		{	v.erase(i2);
-			trackertable[it] = v;
+			trackertable[it.first] = v;
 		}
 	}
 	update_seederlist(fpath);
@@ -220,7 +232,7 @@ void * server_service(void *(socket_ptr))
 		}
 		else if (tkn[0] == "get")
 		{
-			output = run_get(tkn, seederfp);
+			output = run_get(tkn);
 		}
 		else
 		{
@@ -240,7 +252,7 @@ int main(int argc, char *argv[])
 {	mysocket trackerskt1;
 	{	mysocket trackerskt2;
 		pthread_t mythread;
-		if (argc != c)
+		if (argc != 5)
 		{
 			cout << "kyu chutiya bana ra h";
 			return 0;
@@ -250,17 +262,17 @@ int main(int argc, char *argv[])
 			read_seederlist(argv[3]);
 			trackerskt1.setdata(string(argv[1]));
 			trackerskt2.setdata(string(argv[2]));
-			seederfp = string(argv[3]);
+			seederfp = argv[3];
 			int server_fp, new_socket, opt = 1;
 			struct sockaddr_in adr;
 			int adrlen = sizeof(adr);
 			if (server_fp = socket(AF_INET, SOCK_STREAM, 0) == 0)
 			{	cout << "error bolte";
-				exit();
+				exit(0);
 			}
 			if (setsockopt(server_fp, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt)))
 			{	cout << "error bolte";
-				exit();
+				exit(0);
 			}
 			adr.sin_family = AF_INET;
 			adr.sin_addr.s_addr = inet_addr(trackerskt1.ip);
@@ -269,24 +281,24 @@ int main(int argc, char *argv[])
 			if (bind(server_fp, (struct sockaddr_in *) &adr, adrlen) < 0)
 			{
 				cout << "error bolte";
-				exit();
+				exit(0);
 			}
 
 			if (listen(server_fp, 10) < 0)
 			{
 				cout << "erroe bolte";
-				exit();
+				exit(0);
 			}
 			while (1)
 			{
 				if (new_socket = accept(server_fp, (struct sockaddr_in *) &adr, adrlen) < 0)
 				{	cout << "error bolte";
-					exit();
+					exit(0);
 				}
 				cout << "server open";
 				if (pthread_create(&mythread, NULL, server_service, (void *)&new_socket) < 0)
 				{	cout << "error bolte";
-					exit();
+					exit(0);
 				}
 			}
 
