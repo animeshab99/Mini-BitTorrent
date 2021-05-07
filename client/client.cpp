@@ -1,38 +1,34 @@
-#include "headers.cpp"
-#include "torrent_creater.cpp";
-#include "get_file.cpp"
-#include "remove_file.cpp"
-#include "share_file.cpp"
-#include "seeder.cpp"
-
+#include "clientheader.h"
+#include "socket.cpp"
 using namespace std;
-class data;
-{   
+class data
+{   public:
     char * dpath, *reply, *trnt_path;
     int sk;
 };
 string cskt,tskt1,tskt2,torrent_pt;
 map<string,string> download_status;
 
-/*void readalltorents(int sk)
+void readalltorrents(int sk)
 {
     DIR *dir;
     struct dirent *diread;
-    if(dir=opendir(.)!=NULL)
+    dir=opendir(".");
+    if(dir)
     {
         while((diread = readdir(dir))!=NULL)
         {
-            string fl = string(dir->d_name);
-            string ex = ".torrent";
+            string fl = string(diread->d_name);
+            string ex = ".mtorrent";
              string fp;
             if(fl.find(ex)!= string::npos)
             {
                 ifstream fp ( fl, ifstream::binary );
                 int ct=4;
-                string fp;
-                while(ct>=0&&getline(fl,ln))
+                string fpath,ln;
+                while(ct>=0&&getline(fp,ln))
                 {   if(ct==2)
-                        fp=ln;
+                        fpath=ln;
                     ct--;
                 }
                
@@ -40,13 +36,13 @@ map<string,string> download_status;
                strcpy(lhash,ln.c_str());
                string shash = sha1(lhash,ln.length(),0);
                fp.close();
-               string as = "share#"+shash+"#"+cskt
+               string as = "share#"+shash+"#"+cskt;
 
 
             }
         }
     }
-}*/
+}
 vector<string> split_str(string cmd, char c)
 {	vector<string> v;
 	string tp = "";
@@ -72,7 +68,9 @@ int tranfer(string data,string destination_path)
     while(getline(check1,mdl,'@'))
     {   
         vector<string> d = split_str(mdl,'#');
-        seeder_list[{d[0].d[1]}];
+
+        seeder_list.push_back({d[0],d[1]});
+
     }
     mysocket seeder_socket;
     seeder_socket.setdata(seeder_list[0].first);
@@ -81,21 +79,21 @@ int tranfer(string data,string destination_path)
     struct sockaddr_in seeder_adrs;
     if((sock=socket(AF_INET,SOCK_STREAM,0))<0)
     {
-        cout<<"error";
+        cout<<"error1";
         return -1;
     }
     memset(&seeder_adrs,'0',sizeof(seeder_adrs));
     seeder_adrs.sin_family = AF_INET;
     seeder_adrs.sin_port = htons(seeder_socket.port);
 
-    if(inet_ptons(AF_INET,seeder_socket.ip, &seeder_adrs.sin_addr)<=0)
+    if(inet_pton(AF_INET,seeder_socket.ip, &seeder_adrs.sin_addr)<=0)
     {
-        cout<<"error";
+        cout<<"error2";
         return -1;
     }
     if(connect(sock,(struct sockaddr *)&seeder_adrs,sizeof(seeder_adrs))<0)
     {
-        cout<<"error";
+        cout<<"error3";
         return -1;
     }
     char *dp = new char[destination_path.length()+1];
@@ -114,11 +112,11 @@ int tranfer(string data,string destination_path)
         n=read(sock,buf,512*1024);
         fl.write(buf,n);
     }
-    while(n>0)
+    while(n>0);
     fl.close();
     return 1;
 }
-void * run_get((void *)obj)
+void * run_get(void *obj)
 {
     data d = *(data *) obj;
     string tracker_data = string (d.reply);
@@ -127,62 +125,64 @@ void * run_get((void *)obj)
     string mt_path = string(d.trnt_path);
     if((tranfer(tracker_data,d_path)==1))
     {
-        dowload_status[d_path]="S";
+        download_status[d_path]="S";
         vector<string> c;
         c.push_back("share");
         c.push_back(d_path);
         c.push_back(torrent_pt);
         string data = run_client_share(c,cskt,tskt1,tskt2);
-        if(data!="-1")
+       if(data!="-1")
         {
             char *sd = new char[ data.length()+1];
             strcpy(sd,data.c_str());
-            send(sock,sd,strlen(sd),0);
+            send(skt,sd,strlen(sd),0);
             char buf[1024];
-            read(sock,buf,1024);
+            read(skt,buf,1024);
         }
-    }
+   }
     else
     {
-        cout<<"error";
+        cout<<"errorrunget";
     }
     return obj;
 }
 
 
 int main(int argc,char *argv[])
-{
+{	
     mysocket clntsock;
-    mysocket trackersk1;
-    mysocket trackersk2;
-    if(argc !=5)
+   mysocket trackersk1;
+   mysocket trackersk2;
+    if(argc !=4)
     {
-        cout<<"bhup bsdk";
+        cout<<"Invalid Input";
         return 0;
     }
     cskt = string(argv[1]);
     tskt1 = string(argv[2]);
     tskt2 = string(argv[3]);
 
-    clnsock.setdata(cskt);
+    clntsock.setdata(cskt);
     trackersk1.setdata(tskt1);
     trackersk2.setdata(tskt2);
 
-    pthread_id c_seeder;
-    if(pthread_create(&c_seeder,NULL,seederserverservice, (void *) cskt ))
+    pthread_t c_seeder;
+    //cout<<"socket data aa gya bc"<<endl;
+   // return 0;
+    if(pthread_create(&c_seeder,NULL,seederserverservice, (void *) &cskt ))
     {
-        cout<<"error";
+        cout<<"errorpt1";
     }
 
     int sock =0;
     struct sockaddr_in saddrs;
-    if((sock=socket(sock,AF_INET,SOCK_STREAM,0))<0)
+    if((sock=socket(AF_INET,SOCK_STREAM,0))<0)
     {
-        cout<<"error";
+        cout<<"errorpt2";
         return -1;
     }
 
-    memset(&saddrs,0,sizeof(saddrs));
+    memset(&saddrs,'0',sizeof(saddrs));
     saddrs.sin_family = AF_INET;
     saddrs.sin_port = htons(trackersk1.port);
 
@@ -192,12 +192,13 @@ int main(int argc,char *argv[])
         return -1;
     }
 
-    if(connect(sock,(struct *)&saddrs,sizeof(saddrs))<0)
+    if(connect(sock,(struct sockaddr*)&saddrs,sizeof(saddrs))<0)
     {
         return -1;
     }
 
-    //readalltorrents(sock);
+    readalltorrents(sock);
+    cout<<"connected to server"<<endl;
     while(1)
     {
         string cmd;
@@ -205,25 +206,29 @@ int main(int argc,char *argv[])
         char *destpath;
 
         getline(cin>>ws,cmd);
-        bool get=false,close=false;
+        bool get=false,cl=false;
         vector<string> cmds = split_str(cmd,' ');
         string fun = cmds[0];
         string final_instruction;
+        //cout<<"hello";
+        //return 0;
         if(fun=="share")
-        {
+        {      
             if(cmds.size()!=3)
             {
-                cout<<"error";
+                cout<<"errorshare";
             }
+           // cout<<"idhar aa gya"<<endl;
             final_instruction = run_client_share(cmds,cskt,tskt1,tskt2);
             if(final_instruction=="-1")
                 continue;
+
         }
         else if(fun=="get")
         {
             if(cmds.size()!=3)
             {
-                cout<<"error";
+                cout<<"errorgeett";
             }
             final_instruction = run_client_get(cmds);
             destpath = new char[cmds[2].length()+1];
@@ -262,7 +267,7 @@ int main(int argc,char *argv[])
         else if(fun=="close")
         {
             final_instruction = "close"+cskt;
-            close = true;
+            cl = true;
         }
         else
         {
@@ -271,36 +276,40 @@ int main(int argc,char *argv[])
         }
         char *req_to_tracker = new char[final_instruction.length()+1];
         strcpy(req_to_tracker,final_instruction.c_str());
+        cout<<"final instruction is "<<final_instruction<<endl;
         send(sock,req_to_tracker,strlen(req_to_tracker),0);
-
-        char tracker_reply[1024];
+        //cout<<"daTA SENT"<<endl;
+        char tracker_reply[1024]={0};
         read(sock,tracker_reply,1024);
+        //cout<<"data recieved"<<endl;
         string tr = string(tracker_reply);
+        //cout<<tr<<endl;
         if(get)
         {
+        	//cout<<tr<<endl;
             data inp;
             inp.sk = sock;
-            inp.dpath = char new[cmds[2].length()+1];
-            strcpy(inp.dpath,cmd[2].c_str());
-            inp.reply = char new[tr.length()+1];
+            inp.dpath = new char[cmds[2].length()+1];
+            strcpy(inp.dpath,cmds[2].c_str());
+            inp.reply = new char[tr.length()+1];
             strcpy(inp.reply,tr.c_str());
-            inp.trnt_path = char new[cmds[1].length()+1];
+            inp.trnt_path = new char[cmds[1].length()+1];
             strcpy(inp.trnt_path,cmds[1].c_str());
 
-            pthread_id thradid;
+            pthread_t threadid;
             if(pthread_create(&threadid,NULL, run_get,(void *)&inp)<0)
             {
                 cout<<"ERROR";
             }
             get=false;
         }
-        if(tracker_reply=="maze karo")
+        if(tracker_reply=="FILE REMOVED")
         {
             if(remove(mtpath)!=0)
-                cout<<"torrent apne aap delete krlio"<<endl;
+                cout<<"torrent not delete"<<endl;
         }   
-        if(close)
-        {   cout<<"bhag bsdk"<<endl;
+        if(cl)
+        {   cout<<"Thankyou"<<endl;
             close(sock);
             break;
         }

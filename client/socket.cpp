@@ -1,4 +1,5 @@
-#include<bits/stdc++.h>
+//#include<bits/stdc++.h>
+#include "clientheader.h"
 using namespace std;
 
 class mysocket

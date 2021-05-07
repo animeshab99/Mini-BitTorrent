@@ -1,4 +1,3 @@
-
 #include "socket.cpp"
 #include <bits/stdc++.h>
 #include <stdio.h>
@@ -10,7 +9,7 @@
 #include <openssl/sha.h>
 #include <sys/socket.h> 
 #include <netinet/in.h> 
-#include <arpa/inet.h>
+#include <arpa/inet.h> 
 #include <pthread.h>
 
 
@@ -50,12 +49,13 @@ vector<string> split_str(string cmd, char c)
 			tp += cmd[i];
 	}
 	return v;
+	
 }
 
 int read_seederlist (char *fpath)
 {	ifstream fp( fpath , ifstream:: binary);
 	if (!fp)
-	{	cout << "maa chuda";
+	{	cout << "Seeder list not open"<<endl;
 		return 0;
 	}
 	else
@@ -94,7 +94,7 @@ string run_get(vector<string> tkn)
 {
 	string as = "";
 	string hash = tkn[1];
-	if (trackertable.count("hash"))
+	if (trackertable.count(hash))
 	{
 		vector<trackerdata> v = trackertable[hash];
 		int n = v.size();
@@ -103,7 +103,8 @@ string run_get(vector<string> tkn)
 		as += v[n - 1].csocket + "#" + v[n - 1].cfpath;
 	}
 	else
-		as = "maa chuda";
+		as = "NO SEEDER AVAILABLE FOR GIVEN FILE";
+
 	return as;
 }
 
@@ -115,7 +116,7 @@ string run_remove(vector<string> tkn, char* fpath)
 	if (trackertable.count(hash))
 	{
 		vector<trackerdata> v = trackertable[hash];
-		auto it;//=v.begin();
+		auto it=v.begin();
 		for (it = v.begin() ; it != v.end(); it++)
 		{	if ((*it).csocket == skt)
 			{	fd_tkn = true;
@@ -132,23 +133,24 @@ string run_remove(vector<string> tkn, char* fpath)
 	}
 	if (fd_tkn)
 	{	update_seederlist(fpath);
-		return "maze karo";
+		return "FILE REMOVED";
 	}
 	else
-		return "maa chudao";
+		return "NO FILE FIND TO REMOVE";
 
 }
 
 string run_share(vector<string> tkn, char* fpath)
 {
 	string tkn_list = tkn[1] + " " + tkn[2] + " " + tkn[3];
+	//cout<<tkn_list<<endl;
 	trackerdata td(tkn[1], tkn[2], tkn[3]);
 	string as;
 	if (!trackertable.count(td.shash))
 	{
 		trackertable[td.shash].push_back(td);
 		int nul = write_seederlist(fpath, tkn_list);
-		as = "maze maro";
+		as = "FILE SHARED";
 	}
 	else
 	{
@@ -158,12 +160,12 @@ string run_share(vector<string> tkn, char* fpath)
 		{	if (v[i].csocket == td.csocket)
 			{
 				ch = true;
-				as = "kahe chutiya bana re";
+				as = "FILE ALREADY SHARED";
 				break;
 			}
 		}
 		if (!ch)
-		{	as = "mil gai";
+		{	as = "FILE SHARED";
 			trackertable[td.shash].push_back(td);
 			int nul = write_seederlist(fpath, tkn_list);
 		}
@@ -178,7 +180,7 @@ string run_close(vector<string> tkn, char *fpath)
 	{
 		vector<trackerdata> v = it.second;
 		bool sz_1 = false, skt_mila = false;
-		auto i2;
+		auto i2=v.begin();
 		for ( i2 = v.begin(); i2 != v.end(); i2++)
 		{
 			if ((*i2).csocket == client_skt)
@@ -198,16 +200,16 @@ string run_close(vector<string> tkn, char *fpath)
 		}
 	}
 	update_seederlist(fpath);
-	return "bhag bsdk";
+	return "GOOD BYE";
 }
 
 void * server_service(void *(socket_ptr))
 {
 	int socket = *(int *)socket_ptr;
-	bool band_kar = false;
+	
 	while (1)
-	{
-		char buffer[1024];
+	{	bool band_kar = false;
+		char buffer[1024]={0};
 		int data = read(socket, buffer, 1024);
 		if (!data)
 		{
@@ -215,8 +217,10 @@ void * server_service(void *(socket_ptr))
 			return socket_ptr;
 		}
 		string s = string(buffer);
+		//cout<<"recieved string is "<<s<<endl;
 		string output = "";
 		vector<string> tkn = split_str(s, '#');
+
 		if (tkn[0] == "share")
 		{
 			output = run_share(tkn, seederfp);
@@ -238,8 +242,10 @@ void * server_service(void *(socket_ptr))
 		{
 			output = "bhag bsdk";
 		}
-		output += '\0';
-		send(socket, output, output.size(), 0);
+		//output += '\0';
+		char *o=new char[output.length()+1];
+		strcpy(o,output.c_str());
+		send(socket, o, strlen(o), 0);
 		if (band_kar)
 		{
 			close(socket);
@@ -252,9 +258,9 @@ int main(int argc, char *argv[])
 {	mysocket trackerskt1;
 	{	mysocket trackerskt2;
 		pthread_t mythread;
-		if (argc != 5)
+		if (argc != 4)
 		{
-			cout << "kyu chutiya bana ra h";
+			cout << "TRACKER INFO IS WRONG";
 			return 0;
 		}
 		else
@@ -266,38 +272,39 @@ int main(int argc, char *argv[])
 			int server_fp, new_socket, opt = 1;
 			struct sockaddr_in adr;
 			int adrlen = sizeof(adr);
-			if (server_fp = socket(AF_INET, SOCK_STREAM, 0) == 0)
-			{	cout << "error bolte";
+			if ((server_fp = socket(AF_INET, SOCK_STREAM, 0)) == 0)
+			{	cout << "SOCKET NOT CREATED";
 				exit(0);
 			}
 			if (setsockopt(server_fp, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt)))
-			{	cout << "error bolte";
+			{	cout << "SOCKET NOT OPEN";
 				exit(0);
 			}
 			adr.sin_family = AF_INET;
 			adr.sin_addr.s_addr = inet_addr(trackerskt1.ip);
 			adr.sin_port = htons(trackerskt1.port);
 
-			if (bind(server_fp, (struct sockaddr_in *) &adr, adrlen) < 0)
+			if (bind(server_fp, (struct sockaddr *) &adr, adrlen) < 0)
 			{
-				cout << "error bolte";
+				cout << "BIND NOT WORK";
 				exit(0);
 			}
 
 			if (listen(server_fp, 10) < 0)
 			{
-				cout << "erroe bolte";
+				cout << "LISTEN FAILED";
 				exit(0);
 			}
+			cout<<"Tracker is active "<<endl;
 			while (1)
-			{
-				if (new_socket = accept(server_fp, (struct sockaddr_in *) &adr, adrlen) < 0)
-				{	cout << "error bolte";
+			{	//cout << "server open";
+				if ((new_socket = accept(server_fp, (struct sockaddr *) &adr,(socklen_t*) &adrlen)) < 0)
+				{	cout << "CLIENT NOT ACCDEPTED";
 					exit(0);
 				}
-				cout << "server open";
+				//cout << "server open";
 				if (pthread_create(&mythread, NULL, server_service, (void *)&new_socket) < 0)
-				{	cout << "error bolte";
+				{	cout << "THREAD NOT CREATED";
 					exit(0);
 				}
 			}
@@ -305,3 +312,4 @@ int main(int argc, char *argv[])
 		}
 		return 0;
 	}
+}

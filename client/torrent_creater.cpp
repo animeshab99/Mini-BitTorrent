@@ -1,9 +1,10 @@
-#include<bits/stdc++.h>
+#include "clientheader.h"
+//#include "headers.cpp"
 using namespace std;
 #define c_size 512*1024
 string sha1(char *chnk,int sz, int shrt)
 {
-    unsigned char * hash[SHA_DIGEST_LENGTH];
+    unsigned char hash[SHA_DIGEST_LENGTH];
     char buf[SHA_DIGEST_LENGTH*2];
     SHA1((unsigned char *)chnk,sz,hash);
     for(int i=0;i<SHA_DIGEST_LENGTH;i++)
@@ -28,11 +29,11 @@ string file_hash(char *fpath)
     ifstream fp(fpath,ifstream :: binary);
     if(!fp)
     {
-        cout<<"are oo bsdiwale chacha"<<endl;
+        cout<<"file note opening in hash"<<endl;
         return "-1";
     }
     struct stat s;
-    stat(fpath,s);
+    stat(fpath,&s);
     long long int t_size = s.st_size;
     long long int cs = c_size;
     int no_chunks = t_size/cs;
@@ -58,15 +59,16 @@ string file_hash(char *fpath)
 }
 
 string create_hash(char *fpath , char *tpath,string sk1,string sk2)
-{
+{   
     struct stat s;
-    if(stat(&fpath,s)==-1)
+    if(stat(fpath,&s)==-1)
     {
-        cout<<"kyu maz le ra"<<endl;
+        cout<<"File Not Found"<<endl;
         return "-1";
     }
+    cout<<fpath<<endl;
     ofstream fp;
-    fp.open(string(fpath));
+    fp.open(string(tpath));
     fp<<sk1<<endl;
     fp<<sk2<<endl;
     fp<<string(fpath)<<endl;
@@ -74,5 +76,6 @@ string create_hash(char *fpath , char *tpath,string sk1,string sk2)
     string hash = file_hash(fpath);
     fp<<hash<<endl;
     fp.close();
+   // cout<<"torrent done bc"<<endl;
     return hash;
 }

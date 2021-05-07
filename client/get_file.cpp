@@ -1,8 +1,7 @@
-#include<bits/stdc++.h>
-#include "torrent_creater.cpp"
+#include "clientheader.h"
 using namespace std;
 
-string run_client_remove(vector<string> tkn,string cln_skt)
+string run_client_get(vector<string> tkn)
 {
     string mtpath = tkn[1];
     char *tp = new char[mtpath.length()+1];
@@ -17,7 +16,9 @@ string run_client_remove(vector<string> tkn,string cln_skt)
     fp.close();
      char *hs = new char[ln.length()+1];
     strcpy(hs, ln.c_str());
-    string sht_hs = sha1(hs,ln.length(),0);
-    string as = tkn[0]+"#"+sht_hs+"#"+cln_skt;
+    string sht_hs = sha1(hs,strlen(hs),0);
+    //cout<<sht_hs<<endl;
+    string as = tkn[0]+"#"+sht_hs;
+    //cout<<as<<endl;
     return as;
 }

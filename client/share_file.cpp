@@ -1,12 +1,9 @@
-#include<bits/stdc++.h>
-#include "torrent_creater.cpp"
-using namespace std;
-
+#include "clientheader.h"
 string run_client_share(vector<string> tkn, string clnt_skt,string trck_sk1, string trck_sk2)
 {
     string fpath = tkn[1];
     string mtpath = tkn[2];
-
+    //cout<<"aa gya run client share"<<endl;
     char *fp, *tp;
     fp = new char[fpath.length() + 1];
     strcpy(fp, fpath.c_str());
@@ -25,5 +22,6 @@ string run_client_share(vector<string> tkn, string clnt_skt,string trck_sk1, str
     
     string shrt_hash = sha1(lng_hash,f_hash.length(),0);
     string as= tkn[0]+"#"+shrt_hash+"#"+clnt_skt+"#"+fpath;
+    //cout<<as<<endl;
     return as;
 }
