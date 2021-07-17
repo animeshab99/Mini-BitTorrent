@@ -3,7 +3,7 @@
 `sudo apt install openssl libssl-dev`
 
 ### Summary
-[![Blank-diagram.jpg](https://i.postimg.cc/3rXGgBFt/Blank-diagram.jpg)](https://postimg.cc/kD5DCWZS)
+[![Torrent-diagram.jpg](https://i.postimg.cc/T1nYXCCh/Torrent-diagram.jpg)](https://postimg.cc/MfK87bk8)
 
 ### Running the Project
 * Run the following command to activate tracker server
