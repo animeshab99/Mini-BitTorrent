@@ -2,6 +2,9 @@
 ### Requirement-
 `sudo apt install openssl libssl-dev`
 
+### Summary
+[![Blank-diagram.jpg](https://i.postimg.cc/3rXGgBFt/Blank-diagram.jpg)](https://postimg.cc/kD5DCWZS)
+
 ### Running the Project
 * Run the following command to activate tracker server
  ```
